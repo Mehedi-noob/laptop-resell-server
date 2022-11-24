@@ -1,0 +1,17 @@
+[
+    {
+        "id": "1",
+        "name": "dell",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Dell_logo_2016.svg/1200px-Dell_logo_2016.svg.png"
+    },
+    {
+        "id": "2",
+        "name": "hp",
+        "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/HP_logo_2012.svg/1200px-HP_logo_2012.svg.png"
+    },
+    {
+        "id": "3",
+        "name": "asus",
+        "image": "https://dlcdnimgs.asus.com/websites/IN/Sno/91059.jpg"
+    }
+]
