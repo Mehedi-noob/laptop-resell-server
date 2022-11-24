@@ -19,14 +19,32 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 // mongodb start 
 async function run() {
     try {
-        // servers collection 
+        // collections
         const categoryCollection = client.db('laptopResell').collection('LCategory');
+        const productCollection = client.db('laptopResell').collection('productCollection');
+        const userCollection = client.db('laptopResell').collection('users');
         // category api
         app.get('/category', async (req, res) => {
             const query = {};
             const cursor = categoryCollection.find(query);
             const categories = await cursor.toArray();
             res.send(categories);
+        });
+
+        // products api 
+        app.get('/category/:id', async (req, res) => {
+            const id = parseInt(req.params.id);
+            const query = { categoryId: id };
+            const cursor = productCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+            console.log(products);
+        });
+        // Posting users 
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user);
+            res.send(result);
         });
 
     }
