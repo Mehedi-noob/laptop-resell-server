@@ -79,6 +79,24 @@ async function run() {
             const result = await productCollection.insertOne(product);
             res.send(result)
         })
+        app.get('/addproduct/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { sellerEmail: email };
+            const cursor = productCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+            console.log(products);
+        });
+        
+        // get users according to email 
+        app.get('/users', async (req, res) => {
+            const role = req.query.role;
+            const query = { role };
+            const cursor = userCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+            console.log(users);
+        });
 
     }
     finally {
