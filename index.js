@@ -23,6 +23,7 @@ async function run() {
         const categoryCollection = client.db('laptopResell').collection('LCategory');
         const productCollection = client.db('laptopResell').collection('productCollection');
         const userCollection = client.db('laptopResell').collection('users');
+        const bookingCollection = client.db('laptopResell').collection('booking');
         // category api
         app.get('/category', async (req, res) => {
             const query = {};
@@ -32,20 +33,37 @@ async function run() {
         });
 
         // products api 
-        app.get('/category/:id', async (req, res) => {
-            const id = parseInt(req.params.id);
-            const query = { categoryId: id };
+        app.get('/category/:name', async (req, res) => {
+            const name = req.params.name;
+            const query = { categoryName: name };
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
             console.log(products);
         });
         // Posting users 
-        app.post('/users', async (req, res) => {
+        app.post('/users',async(req,res)=>{
             const user = req.body;
-            const result = await userCollection.insertOne(user);
-            res.send(result);
-        });
+            email = user.email;
+            const query = { email };
+            
+            let postedUser = await userCollection.findOne(query);
+            if(postedUser === null){
+              postedUser = {}
+            }
+            console.log(postedUser.email,email)
+              if(postedUser.email !== email){
+                const result = userCollection.insertOne(user);
+                res.send(result)
+              }
+            
+        })
+        // booking laptop 
+        app.post('/booking',async(req,res)=>{
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking);
+            res.send(result)
+        })
 
     }
     finally {
