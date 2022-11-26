@@ -61,8 +61,18 @@ async function run() {
         // booking laptop 
         app.post('/booking', async (req, res) => {
             const booking = req.body;
-            const result = await bookingCollection.insertOne(booking);
-            res.send(result)
+            const query = {productId: booking.productId};
+            console.log('productId ', booking.productId);
+            let alreadyBooked = await bookingCollection.findOne(query);
+            
+            console.log(alreadyBooked, 'alreadyBooked');
+            if (alreadyBooked?.productId !== booking.productId){
+                const result = await bookingCollection.insertOne(booking);
+                res.send(result);
+            }            
+            else{
+                res.send({message: "not possible"})
+            }
         })
         // my orders
         app.get('/booking/:email', async (req, res) => {
@@ -109,6 +119,14 @@ async function run() {
             res.send(users);
             console.log(users);
         });
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const cursor = userCollection.find(query);
+            const users = await cursor.toArray();
+            res.send(users);
+            console.log(users);
+        });
         // setverification in the users 
         // app.get('/users', async (req, res) => {
         //     const filter = {}
@@ -143,7 +161,12 @@ async function run() {
             res.send(result)
         })
         // advertize section 
-
+        app.get('/advertize', async (req, res) => {
+            const query = { isAdvertized: true };
+            const cursor = productCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        });
 
     }
     finally {
