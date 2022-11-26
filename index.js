@@ -42,24 +42,24 @@ async function run() {
             console.log(products);
         });
         // Posting users 
-        app.post('/users',async(req,res)=>{
+        app.post('/users', async (req, res) => {
             const user = req.body;
             email = user.email;
             const query = { email };
-            
+
             let postedUser = await userCollection.findOne(query);
-            if(postedUser === null){
-              postedUser = {}
+            if (postedUser === null) {
+                postedUser = {}
             }
-            console.log(postedUser.email,email)
-              if(postedUser.email !== email){
+            console.log(postedUser.email, email)
+            if (postedUser.email !== email) {
                 const result = userCollection.insertOne(user);
                 res.send(result)
-              }
-            
+            }
+
         })
         // booking laptop 
-        app.post('/booking',async(req,res)=>{
+        app.post('/booking', async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
             res.send(result)
@@ -74,7 +74,7 @@ async function run() {
             console.log(products);
         });
         // add product 
-        app.post('/addproduct',async(req,res)=>{
+        app.post('/addproduct', async (req, res) => {
             const product = req.body;
             const result = await productCollection.insertOne(product);
             res.send(result)
@@ -85,9 +85,21 @@ async function run() {
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
-            console.log(products);
         });
-        
+        // adertize api 
+        app.put('/myproduct/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    isAdvertized: true,
+                },
+            };
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+
         // get users according to email 
         app.get('/users', async (req, res) => {
             const role = req.query.role;
@@ -97,6 +109,41 @@ async function run() {
             res.send(users);
             console.log(users);
         });
+        // setverification in the users 
+        // app.get('/users', async (req, res) => {
+        //     const filter = {}
+        //     const options = { upsert: true }
+        //     const updatedDoc = {
+        //         $set: {
+        //             isVerified: false
+        //         }
+        //     }
+        //     const result = await userCollection.updateMany(filter, updatedDoc, options);
+        //     res.send(result);
+        // })
+
+        // user verification 
+        app.put('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    isVerified: true,
+                },
+            };
+            const result = await userCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+        //   user deletion
+        app.delete('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const result = await userCollection.deleteOne(filter);
+            res.send(result)
+        })
+        // advertize section 
+
 
     }
     finally {
