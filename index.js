@@ -127,7 +127,7 @@ async function run() {
             res.send(users);
             console.log(users);
         });
-        // setverification in the users 
+        // data edit api 
         // app.get('/users', async (req, res) => {
         //     const filter = {}
         //     const options = { upsert: true }
