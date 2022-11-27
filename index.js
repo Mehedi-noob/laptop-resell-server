@@ -26,6 +26,7 @@ async function run() {
         const userCollection = client.db('laptopResell').collection('users');
         const bookingCollection = client.db('laptopResell').collection('booking');
         const paymentsCollection = client.db('laptopResell').collection('payments');
+        const reportCollection = client.db('laptopResell').collection('report');
         // category api
         app.get('/category', async (req, res) => {
             const query = {};
@@ -64,9 +65,10 @@ async function run() {
             const booking = req.body;
             const query = {productId: booking.productId};
             let alreadyBooked = await bookingCollection.findOne(query);
+            const checkUser = booking.buyersEmail;
             
             console.log(alreadyBooked, 'alreadyBooked');
-            if (alreadyBooked?.productId !== booking.productId){
+            if (alreadyBooked?.productId !== booking.productId && alreadyBooked?.buyersEmail !== checkUser){
                 const result = await bookingCollection.insertOne(booking);
                 res.send(result);
             }            
@@ -115,6 +117,13 @@ async function run() {
                 },
             };
             const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+        // delete product
+        app.delete('/myproduct/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(filter);
             res.send(result)
         })
 
@@ -233,6 +242,31 @@ async function run() {
             const updatedResult2 = await productCollection.updateOne(query, updatedDoc2)
             res.send(result);
           })
+        //   report to admin 
+        // app.delete('/myproduct/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const filter = { _id: ObjectId(id) };
+        //     const result = await productCollection.deleteOne(filter);
+        //     res.send(result)
+        // })
+        app.put('/report/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: {
+                    isReported: true,
+                },
+            };
+            const result = await productCollection.updateOne(filter, updatedDoc, options);
+            res.send(result)
+        })
+        app.get('/report', async (req, res) => {
+            const query = {isReported: true}
+            const cursor = productCollection.find(query);
+            const reportedItems = await cursor.toArray();
+            res.send(reportedItems);
+        })
 
     }
     finally {
