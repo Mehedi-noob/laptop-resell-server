@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const jwt = require('jsonwebtoken');
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const port = process.env.PORT || 5000;
 
@@ -17,6 +18,26 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('This section is Not Authorized');
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'This section is Forbidded' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+
+}
+
+
 // mongodb start 
 async function run() {
     try {
@@ -26,7 +47,7 @@ async function run() {
         const userCollection = client.db('laptopResell').collection('users');
         const bookingCollection = client.db('laptopResell').collection('booking');
         const paymentsCollection = client.db('laptopResell').collection('payments');
-        const reportCollection = client.db('laptopResell').collection('report');
+
         // category api
         app.get('/category', async (req, res) => {
             const query = {};
@@ -77,7 +98,7 @@ async function run() {
             }
         })
         // my orders
-        app.get('/booking/:email', async (req, res) => {
+        app.get('/booking/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { buyersEmail: email };
             const cursor = bookingCollection.find(query);
@@ -128,7 +149,7 @@ async function run() {
         })
 
         // get users according to email 
-        app.get('/users', async (req, res) => {
+        app.get('/users',verifyJWT, async (req, res) => {
             const role = req.query.role;
             const query = { role };
             const cursor = userCollection.find(query);
@@ -193,7 +214,7 @@ async function run() {
         })
 
         // advertize section 
-        app.get('/advertize', async (req, res) => {
+        app.get('/advertize',verifyJWT, async (req, res) => {
             const query = { isAdvertized: true };
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
@@ -267,6 +288,17 @@ async function run() {
             const reportedItems = await cursor.toArray();
             res.send(reportedItems);
         })
+        // jwt 
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15d' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
 
     }
     finally {
