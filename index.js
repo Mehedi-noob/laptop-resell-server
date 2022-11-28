@@ -74,7 +74,6 @@ async function run() {
             if (postedUser === null) {
                 postedUser = {}
             }
-            console.log(postedUser.email, email)
             if (postedUser.email !== email) {
                 const result = userCollection.insertOne(user);
                 res.send(result)
@@ -88,7 +87,6 @@ async function run() {
             let alreadyBooked = await bookingCollection.findOne(query);
             const checkUser = booking.buyersEmail;
             
-            console.log(alreadyBooked, 'alreadyBooked');
             if (alreadyBooked?.productId !== booking.productId && alreadyBooked?.buyersEmail !== checkUser){
                 const result = await bookingCollection.insertOne(booking);
                 res.send(result);
@@ -104,7 +102,6 @@ async function run() {
             const cursor = bookingCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
-            console.log(products);
         });
         // payment 
         app.get('/bookings/:id', async (req, res) => {
@@ -155,7 +152,6 @@ async function run() {
             const cursor = userCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
-            console.log(users);
         });
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email;
@@ -163,7 +159,6 @@ async function run() {
             const cursor = userCollection.find(query);
             const users = await cursor.toArray();
             res.send(users);
-            console.log(users);
         });
         // data edit api 
         // app.get('/productedit', async (req, res) => {
@@ -294,7 +289,7 @@ async function run() {
             const query = { email: email };
             const user = await userCollection.findOne(query);
             if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15d' })
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
                 return res.send({ accessToken: token });
             }
             res.status(403).send({ accessToken: '' })
